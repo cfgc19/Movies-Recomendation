@@ -46,17 +46,24 @@ movies_ids = remove_duplicates(get_movies_ids())
 movies_titles = []
 amazon = AmazonAPI(AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_ASSOCIATE_TAG, MaxQPS=0.9, ErrorHandler=error_handler)
 
+
 def write_txt():
     file = open('movies_titles_id_.txt', 'w', encoding='utf-8')
 
-    file.write('movie_id' + ',' +'movie_title' + '\n')
+    file.write('movie_id' + ',' +'movie_title' + ',' +'genre'+ '\n')
     i = 0
     for ids in movies_ids:
         movie_title = amazon.lookup(ItemId=ids)
         movies_titles.append(movie_title)
+<<<<<<< HEAD
         #print(i, '-', movie_title)
         file.write(movies_ids[i] + ',' + str(movies_titles[i])+'\n')
+=======
+        print(i, '-', movie_title)
+        file.write(movies_ids[i] + ',' + str(movies_titles[i])+','+ str(movies_titles[i].genre)+'\n')
+>>>>>>> aeb3a4df7bbe270d3c65cc510cd660b21b0424ba
         i = i + 1
+    file.close()
 
 #write_txt()
 
