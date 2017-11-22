@@ -42,16 +42,18 @@ movies_ids.remove('B0041XQRR2') # é preciso remover este filme porque nao exist
 movies_titles = []
 amazon = AmazonAPI(AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_ASSOCIATE_TAG, MaxQPS=0.9, ErrorHandler=error_handler)
 
+
 def write_txt():
     file = open('movies_titles_id.txt', 'w', encoding='utf-8')
 
-    file.write('movie_id' + ',' +'movie_title' + '\n')
+    file.write('movie_id' + ',' +'movie_title' + ',' +'genre'+ '\n')
     i = 0
     for ids in movies_ids:
         movie_title = amazon.lookup(ItemId=ids)
         movies_titles.append(movie_title)
         print(i, '-', movie_title)
-        file.write(movies_ids[i] + ',' + str(movies_titles[i])+'\n')
+        file.write(movies_ids[i] + ',' + str(movies_titles[i])+','+ str(movies_titles[i].genre)+'\n')
         i = i + 1
+    file.close()
 
 write_txt()
