@@ -55,7 +55,7 @@ def write_txt():
     for ids in movies_ids:
         movie_title = amazon.lookup(ItemId=ids)
         movies_titles.append(movie_title)
-        print(i, '-', movie_title)
+        #print(i, '-', movie_title)
         file.write(movies_ids[i] + ',' + str(movies_titles[i])+','+ str(movies_titles[i].genre)+'\n')
 
         i = i + 1
@@ -66,7 +66,7 @@ def write_txt():
 def found_movie_name(ID, list_names_ids):
     for i in range(0, len(list_names_ids)):
         if list_names_ids[i][0]==ID:
-            return str(list_names_ids[i][1])
+            return str(list_names_ids[i][1]), str(list_names_ids[i][2])
 
 
 def dataset_with_moviename(names_file, data_file):
@@ -96,16 +96,18 @@ def dataset_with_moviename(names_file, data_file):
             # remove white spaces from productID, userID, profileName, helpfulness, score and time
             for i in range(0, len(line_list)-2):
                 line_list[i] = line_list[i].replace(" ", "")
-            line_list.insert(0, found_movie_name(line_list[0],list_names))
+            movie_name, movie_genre = found_movie_name(line_list[0],list_names)
+            line_list.insert(0, movie_name)
+            line_list.insert(0,movie_genre[:-1])
             new_data.append(line_list)
-    np.savetxt('Dataset_SNAP_with_movies.csv', new_data, fmt= '%s,%s,%s,%s,%s,%s,%s,%s,%s')
+    np.savetxt('Dataset_SNAP_with_movies.csv', new_data, fmt= '%s,%s,%s,%s,%s,%s,%s,%s,%s,%s')
     with open('Dataset_SNAP_with_movies.txt', 'w', encoding='utf-8' ) as file:
         for line in new_data:
             print(','.join(line))
             file.write(','.join(line))
             file.write('\n')
     print(reader)
-#dataset_with_moviename('movies_titles_id.txt', 'Dataset_SNAP.csv')
+dataset_with_moviename('movies_titles_id.txt', 'Dataset_SNAP.csv')
 
 '''
 #reading test
