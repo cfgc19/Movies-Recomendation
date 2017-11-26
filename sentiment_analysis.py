@@ -7,12 +7,14 @@ import nltk
 # LABEL 0 : NEUTRAL
 # LABEL 1 : POS
 
+# TAGS QUE QUEREMOS : JJ, JJR,JJS, RB, RBR, RP, UH, VB VBD, VBG, VBN, VBP, VBZ
+
 def nltk_method(review):
     # stop_words = set(stopwords.words('english')) #podemos remover stop_words do nosso dataset
     # print(stopwords)
 
     # words = nltk.word_tokenize(review)
-    # tokens = nltk.pos_tag(words) # buscar as tags das palavras 
+    # tokens = nltk.pos_tag(words) # buscar as tags das palavras
     sia = SIA()
     polarity = sia.polarity_scores(review).get('compound')  # "compound" é a metrica que diz se é positivo ou negativo.
                                                             # vai de -1 a 1
@@ -54,10 +56,9 @@ def opinion_lexicon_method(review):
 
 scores_1 = []
 scores_2 = []
-
-#for review in reviews:
-#    scores_1.append(opinion_lexicon_method(review))
-#    scores_2.append(nltk_method(review))
+for review in reviews:
+    scores_1.append(opinion_lexicon_method(review))
+    scores_2.append(nltk_method(review))
 
 
 def save_scores():
@@ -67,17 +68,4 @@ def save_scores():
             file.write('{},{},{}\n'.format(ids_reviews[i], scores_1[i], scores_2[i]))
 
 
-def cenas(review):
-
-    words = nltk.word_tokenize(review)
-    tokens = nltk.pos_tag(words)
-
-    return tokens
-
-#stop_words = set(stopwords.words('english')) #podemos remover stop_words do nosso dataset
-#print(stopwords)
-
 # save_scores()
-words = nltk.word_tokenize(reviews[1])
-tokens = nltk.pos_tag(words)
-print(tokens)
