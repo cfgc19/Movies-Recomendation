@@ -124,7 +124,7 @@ def save_file():
         tokens = nltk.pos_tag(words)
         list_words = []
         for token in tokens:
-            if token[1] != 'DT' or token[1] != 'IN':
+            if token[1] != 'DT' and token[1] != 'IN':
                 list_words.append(token[0])
         string = ' '.join(list_words)
 
