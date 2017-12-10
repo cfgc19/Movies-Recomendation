@@ -1,0 +1,5 @@
+python-dateutil
+lxml
+bottlenose
+python-amazon-simple-product-api
+requests
