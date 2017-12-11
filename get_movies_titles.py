@@ -2,7 +2,7 @@ from amazon.api import AmazonAPI
 from keys_amazon_api import *
 import csv
 import time
-from urllib.error import HTTPError
+from urllib2 import HTTPError
 import random
 import numpy as np
 import pandas as pd
@@ -14,9 +14,9 @@ AWS_ASSOCIATE_TAG = AWS_ASSOCIATE_TAG
 
 def get_movies_ids():
     ids_movies = []
-    with open('Dataset_SNAP.csv', 'r', encoding='utf-8') as movie_file:
+    with open('Dataset_SNAP.csv', 'r') as movie_file:
         reader = csv.reader(movie_file)
-        next(reader)  # passar a primeira linha à frente
+        next(reader)  # passar a primeira linha a frente
         for i in reader:
             ids_movies.append(i[0].split(',')[0].strip())
     return ids_movies
@@ -39,16 +39,16 @@ def error_handler(err):
 
 
 movies_ids = remove_duplicates(get_movies_ids())
-#movies_ids.remove('B002LSIAQU') # é preciso remover este filme porque nao existe no site já da amazon
+#movies_ids.remove('B002LSIAQU') # e preciso remover este filme porque nao existe no site ja da amazon
 #this movie was deleted from the dataset - a total of 11 reviews
-#movies_ids.remove('B0041XQRR2') # é preciso remover este filme porque nao existe no site já da amazon
+#movies_ids.remove('B0041XQRR2') # e preciso remover este filme porque nao existe no site ja da amazon
 #this movie was deleted from the dataset - a total of 47 reviews
 movies_titles = []
 amazon = AmazonAPI(AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_ASSOCIATE_TAG, MaxQPS=0.9, ErrorHandler=error_handler)
 
 
 def write_txt():
-    file = open('movies_titles_id_.txt', 'w', encoding='utf-8')
+    file = open('movies_titles_id.txt', 'w')
 
     file.write('movie_id' + ',' +'movie_title' + ',' +'genre'+ '\n')
     i = 0
@@ -56,7 +56,7 @@ def write_txt():
         movie_title = amazon.lookup(ItemId=ids)
         movies_titles.append(movie_title)
         #print(i, '-', movie_title)
-        file.write(movies_ids[i] + ',' + str(movies_titles[i])+','+ str(movies_titles[i].genre)+'\n')
+        file.write(movies_ids[i] + ',' + str(movies_titles[i]).replace(',', '')+','+ str(movies_titles[i].genre).replace(',', '')+'\n')
 
         i = i + 1
     file.close()
@@ -81,11 +81,11 @@ def dataset_with_moviename(names_file, data_file):
     #remove header
     list_names = list_names[1:]
     new_data = []
-    with open(data_file, 'r', encoding='utf-8') as movie_file:
+    with open(data_file, 'r') as movie_file:
         reader = csv.reader(movie_file)
         next(reader)
         for line in reader:
-            print(line)
+            #print(line)
             if len(line) == 1:
                 line_list = line[0].split(',')
             else:
@@ -101,12 +101,16 @@ def dataset_with_moviename(names_file, data_file):
             line_list.insert(0,movie_genre[:-1])
             new_data.append(line_list)
     np.savetxt('Dataset_SNAP_with_movies.csv', new_data, fmt= '%s,%s,%s,%s,%s,%s,%s,%s,%s,%s')
-    with open('Dataset_SNAP_with_movies.txt', 'w', encoding='utf-8' ) as file:
+    with open('Dataset_SNAP_with_movies.txt', 'w') as file:
+        i = 0
         for line in new_data:
             print(','.join(line))
             file.write(','.join(line))
+            file.write(',' + str(i))
             file.write('\n')
+            i = i+1
     print(reader)
+
 dataset_with_moviename('movies_titles_id.txt', 'Dataset_SNAP.csv')
 
 '''

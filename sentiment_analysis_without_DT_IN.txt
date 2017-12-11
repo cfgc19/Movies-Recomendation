@@ -1,6 +1,6 @@
 id,opinion_lexicon,nltk,afinn,final_score
 A141HP4LYPWMSR,-1,1,1,1
-A328S9RN3U5M68,-1,-1,-1,-1
+c,-1,-1,-1,-1
 A1I7QGUDP043DG,-1,-1,-1,-1
 A1M5405JH9THP9,-1,-1,-1,-1
 ATXL536YX71TR,-1,-1,-1,-1

@@ -114,7 +114,7 @@ def save_file():
 
         final_scores.append(final_score)
 
-    with open('Sentiment_Analysis.txt', 'w', encoding='utf-8') as file:
+    with open('Sentiment_Analysis.txt', 'w') as file:
         file.write('{},{},{},{},{}\n'.format('id', 'opinion_lexicon', 'nltk', 'afinn', 'final_score'))
         for i in range(0, len(scores_1)):
             file.write('{},{},{},{},{}\n'.format(ids_reviews[i], scores_1[i], scores_2[i], scores_3[i], final_scores[i]))
