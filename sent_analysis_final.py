@@ -132,9 +132,7 @@ def add_negation_suffixes(tokens):
     # negation tokenization
     neg_tokens = []
     append_neg = False  # stores whether to add "_NEG"
-
     for token in tokens:
-
         # if we see clause-level punctuation,
         # stop appending suffix
         if CLAUSE_PUNCT_RE.match(token):
@@ -159,6 +157,7 @@ def afinn_handling_neg_score(review):
     words = nltk.word_tokenize(review)
     tokens = nltk.pos_tag(words)
     neg_tags = add_negation_suffixes(words)
+    print(neg_tags)
     length = len(tokens)
     code = []
     count = 0
@@ -253,12 +252,12 @@ def save_file():
         scores_8.append(score_8)
         scores_9.append(score_9)
         scores_10.append(score_10)
-
+    '''
     with open('sentiment_analysis.txt', 'w') as file:
         file.write('{},{},{},{},{},{},{},{},{},{},{}\n'.format('id', 'opinion_lexicon', 'nltk', 'afinn', 'opinion_lexicon_without_DT_IN',
                                              'nltk_without_DT_IN', 'afinn_without_DT_IN', 'opinion_lexicon_withoutSW_DT_IN',
                                              'nltk_withoutSW_DT_IN', 'afinn_withoutSW_DT_IN', 'afinn_handling_negation'))
         for i in range(0, len(scores_1)):
             file.write('{},{},{},{},{},{},{},{},{},{},{}\n'.format(ids_reviews[i], scores_1[i], scores_2[i], scores_3[i], scores_4[i], scores_5[i],scores_6[i], scores_7[i], scores_8[i], scores_9[i], scores_10[i]))
-
+    '''
 save_file()

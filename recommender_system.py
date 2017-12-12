@@ -40,7 +40,6 @@ def get_review_id(movie_id, user_id):
 
 
 def write_dataset():
-
     with open('Dataset_clusters.txt', 'w+') as dataset_file:
         dataset_file.write("users_id" + ",")
         for i in range(0, len(list_movies)-1):
