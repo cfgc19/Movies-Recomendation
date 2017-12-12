@@ -39,7 +39,6 @@ def get_review_id(movie_id, user_id):
             return i[-1]
 
 
-
 def write_dataset():
 
     with open('Dataset_clusters.txt', 'w+') as dataset_file:
