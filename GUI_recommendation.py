@@ -25,16 +25,31 @@ class SampleApp(tk.Tk):
 
 class StartPage(tk.Frame):
     def recommender_film(self,value):
-        name_film = recommender_film(value)
+        name_film, similar_user = recommender_film(value)
         if self.review_text.winfo_exists():
             self.review_text.delete("1.0", "end")
+        if self.text1.winfo_exists():
+            self.text1.delete("1.0", "end")
 
         self.S.pack(side="right", fill="y")
-        self.review_text.pack(side="bottom", fill="y")
+
+        self.review_text.pack(side="top", fill="y")
         self.review_text.insert("end",name_film)
+
         self.S.config(command=self.review_text.yview)
         self.review_text.config(yscrollcommand=self.S.set)
 
+        label = tk.Label(self, text="Seems that you have similar tastes to...", font = 'courier')
+        label.pack(side="top", fill="x", pady=10)
+
+
+        self.S1.pack(side="right", fill="y")
+
+        self.text1.pack(side="top", fill="y")
+        self.text1.insert("end", similar_user)
+
+        self.S1.config(command=self.text1.yview)
+        self.text1.config(yscrollcommand=self.S1.set)
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
@@ -50,6 +65,10 @@ class StartPage(tk.Frame):
 
         self.S = tk.Scrollbar(self)
         self.review_text = tk.Text(self, height=5, width=30)
+
+        self.S1 = tk.Scrollbar(self)
+        self.text1 = tk.Text(self, height=5, width=30)
+
 
 
 if __name__ == "__main__":
