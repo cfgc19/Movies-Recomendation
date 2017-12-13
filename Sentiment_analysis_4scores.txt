@@ -1,4 +1,4 @@
-review_id,productID,userid,opinion_lexicon_withoutSW_DT_IN,nltk_withoutSW_DT_IN,afinn_withoutSW_DT_IN,afinn_handling_negation,final_score
+review_id,productID,userID,opinion_lexicon_withoutSW_DT_IN,nltk_withoutSW_DT_IN,afinn_withoutSW_DT_IN,afinn_handling_negation,final_score
 0,B003AI2VGA,A141HP4LYPWMSR,-1,1,1,0,1
 1,B003AI2VGA,A328S9RN3U5M68,-1,-1,-1,-1,-1
 2,B003AI2VGA,A1I7QGUDP043DG,-1,-1,-1,-1,-1

@@ -76,6 +76,14 @@ def get_review(movie, user):
                     if line[3] == user:
                         return line[-2]
 
+def get_dict_users_movies():
+    d = {}
+    with open('Dataset_SNAP_with_movies.txt', 'r') as movie_file:
+        reader = csv.reader(movie_file)
+        for line in reader:
+            d[line[3]] = get_movies_of_a_user(line[3])
+    return d
+
 
 def get_text_reviews_and_id():
     reviews = []
