@@ -9,7 +9,7 @@ from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 
 list_users = get_all_users()
-print(len(list_users))
+#print(len(list_users))
 
 list_movies = get_movies('id')
 
@@ -63,12 +63,12 @@ def write_dataframe():
     #dados['users_ids'] = list_users
     l =0
     for user in list_users:
-        print(l)
+        #print(l)
         list_movies_by_user = get_movies_of_a_user(user)
         for movie in list_movies_by_user:
             review_id = get_review_id(movie, user)
             sentiment = get_sentiment_review(review_id)
-            print(sentiment)
+            #print(sentiment)
             dados[movie][user] = sentiment
         l= l+1
     dados = dados.fillna('-2') # preenche os nan com -2
@@ -83,7 +83,7 @@ def write_dataset():
     """
     data = open('Dataset_clusters.txt', 'r')
     data = data.readlines()
-    print(len(data))
+    #print(len(data))
     with open('Dataset_clusters_new.txt', 'w') as dataset_file:
         #write header
         dataset_file.write("users_id" + ",")

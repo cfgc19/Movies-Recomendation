@@ -2,7 +2,7 @@ import Tkinter as tk     # python 2
 import tkFont as tkfont  # python 2
 from open_data import *
 from recommender_system import *
-from sentiment_analysis import final_review
+from sent_analysis_final import final_review
 import tkMessageBox
 
 class SampleApp(tk.Tk):
@@ -21,8 +21,6 @@ class SampleApp(tk.Tk):
         frame = StartPage(parent=container, controller=self)
         frame.grid(row=0, column=0, sticky="nsew")
 
-
-
 class StartPage(tk.Frame):
     def recommender_film(self,value):
         name_film, similar_user = recommender_film(value)
@@ -39,8 +37,8 @@ class StartPage(tk.Frame):
         self.S.config(command=self.review_text.yview)
         self.review_text.config(yscrollcommand=self.S.set)
 
-        label = tk.Label(self, text="Seems that you have similar tastes to...", font = 'courier')
-        label.pack(side="top", fill="x", pady=10)
+
+        self.label.pack(side="top", fill="x", pady=10)
 
 
         self.S1.pack(side="right", fill="y")
@@ -66,6 +64,7 @@ class StartPage(tk.Frame):
         self.S = tk.Scrollbar(self)
         self.review_text = tk.Text(self, height=5, width=30)
 
+        self.label = tk.Label(self, text="Seems that you have similar tastes to...", font='courier')
         self.S1 = tk.Scrollbar(self)
         self.text1 = tk.Text(self, height=5, width=30)
 
