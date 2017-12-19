@@ -4,6 +4,7 @@ from afinn import Afinn
 from nltk.corpus import stopwords
 import nltk
 import re
+import numpy as np
 
 # LABEL -1 : NEG
 # LABEL 0 : NEUTRAL
@@ -97,7 +98,7 @@ def get_final_score(score_1,score_2,score_3):
 def remove_stopwords(review):
     stop_words = stopwords.words('english')
     list_words = review.split(' ')
-    print(len(list_words))
+    # print(len(list_words))
     list_words_new = []
     for word in list_words:
         if word in stop_words:
@@ -106,21 +107,73 @@ def remove_stopwords(review):
             list_words_new.append(word)
     return ' '.join(list_words_new)
 
+def occurrences(list_scores):
+    unq_scores = np.unique(list_scores)
+    occur = []
+    for score in unq_scores:
+        count = np.count_nonzero(list_scores==score)
+        occur.append(count)
+    return occur
+
+def final_score(score1, score2, score3, score4):
+    list_scores = np.array([score1,score2,score3,score4])
+    unq_scores = np.unique(list_scores)
+    if len(unq_scores) == 1:
+        return unq_scores[0]
+    elif len(unq_scores) == 2:
+        occur = occurrences(list_scores)
+        if occur == [1,3]:
+            return unq_scores[1]
+        elif occur == [3,1]:
+            return unq_scores[0]
+        elif occur == [2,2]:
+            if '0' in unq_scores:
+                return '0'
+            else:
+                return -1
+    elif len(unq_scores) == 3:
+        occur = occurrences(list_scores)
+        return unq_scores[np.where( np.array(occur) == 2)[0]][0]
+
+
 def final_review(review):
+    words = nltk.word_tokenize(review)
+    tokens = nltk.pos_tag(words)
 
-    score_1 = nltk_method(review)
-    score_2 = opinion_lexicon_method(review)
-    score_3 = sentiment_afinn(review)
+    review_without_sw = remove_stopwords(review)
+    words_without_sw = nltk.word_tokenize(review_without_sw)
+    tokens_without_sw = nltk.pos_tag(words_without_sw)
 
-    final_score = get_final_score(score_1,score_2,score_3)
+    list_words_without_DT_IN = []
+    list_words_without_DT_IN_stopwords = []
 
-    if final_score==1:
+    for token in tokens:
+        if token[1] != 'DT' or token[1] != 'IN':
+            list_words_without_DT_IN.append(token[0])
+
+    for token in tokens_without_sw:
+        if token[1] != 'DT' or token[1] != 'IN':
+            list_words_without_DT_IN_stopwords.append(token[0])
+
+    string_DT_IN = ' '.join(list_words_without_DT_IN)
+    string_DT_IN_SW = ' '.join(list_words_without_DT_IN_stopwords)
+
+
+    score_1 = opinion_lexicon_method(string_DT_IN_SW)
+    score_2 = nltk_method(string_DT_IN_SW)
+    score_3 = sentiment_afinn(string_DT_IN_SW)
+    score_4 = afinn_handling_neg_score(review)
+
+    score = final_score(score_1,score_2,score_3, score_4)
+
+    if score==1:
         score_str = "Positive"
-    elif final_score==-1:
+    elif score==-1:
         score_str = "Negative"
     else:
         score_str = "Neutral"
     return score_str
+
 
 def add_negation_suffixes(tokens):
     """
@@ -132,9 +185,7 @@ def add_negation_suffixes(tokens):
     # negation tokenization
     neg_tokens = []
     append_neg = False  # stores whether to add "_NEG"
-
     for token in tokens:
-
         # if we see clause-level punctuation,
         # stop appending suffix
         if CLAUSE_PUNCT_RE.match(token):
@@ -150,6 +201,7 @@ def add_negation_suffixes(tokens):
         if NEGATION_RE.match(token):
             append_neg = True
     return neg_tokens
+
 def afinn_handling_neg_score(review):
     """
     'inv' the score must be inverted
@@ -159,6 +211,7 @@ def afinn_handling_neg_score(review):
     words = nltk.word_tokenize(review)
     tokens = nltk.pos_tag(words)
     neg_tags = add_negation_suffixes(words)
+    #print(neg_tags)
     length = len(tokens)
     code = []
     count = 0
@@ -253,12 +306,11 @@ def save_file():
         scores_8.append(score_8)
         scores_9.append(score_9)
         scores_10.append(score_10)
-
+    '''
     with open('sentiment_analysis.txt', 'w') as file:
         file.write('{},{},{},{},{},{},{},{},{},{},{}\n'.format('id', 'opinion_lexicon', 'nltk', 'afinn', 'opinion_lexicon_without_DT_IN',
                                              'nltk_without_DT_IN', 'afinn_without_DT_IN', 'opinion_lexicon_withoutSW_DT_IN',
                                              'nltk_withoutSW_DT_IN', 'afinn_withoutSW_DT_IN', 'afinn_handling_negation'))
         for i in range(0, len(scores_1)):
             file.write('{},{},{},{},{},{},{},{},{},{},{}\n'.format(ids_reviews[i], scores_1[i], scores_2[i], scores_3[i], scores_4[i], scores_5[i],scores_6[i], scores_7[i], scores_8[i], scores_9[i], scores_10[i]))
-
-save_file()
+    '''
