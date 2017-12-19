@@ -23,7 +23,7 @@ class SampleApp(tk.Tk):
 
 class StartPage(tk.Frame):
     def recommender_film(self,value):
-        name_film, similar_user = recommender_film(value)
+        name_film, similar_user = recommender_film(value,1)
         if self.review_text.winfo_exists():
             self.review_text.delete("1.0", "end")
         if self.text1.winfo_exists():

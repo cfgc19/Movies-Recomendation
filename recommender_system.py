@@ -7,6 +7,8 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
+from collections import Counter
+
 
 list_users = get_all_users()
 #print(len(list_users))
@@ -162,9 +164,6 @@ def kmean_cluster(dados, n, type):
         plt.scatter(centroids[:, 0], centroids[:, 1], marker='*', c='#050505', s=40)
         plt.title('k-Means for k=' + str(n))
         plt.show()
-
-
-
     elif type=='3d':
 
         fig = plt.figure()
@@ -212,7 +211,7 @@ def get_liked_movies(user_id_1, user_id_2):
 user_id = 'ASURJI83YT577'
 
 
-def recommender_film(user_id):
+def recommender_film(user_id, option):
     data = pd.read_csv('Dataset_clusters.txt')
     data = data.drop('users_id', axis=1)
     data = data.as_matrix()
@@ -220,24 +219,32 @@ def recommender_film(user_id):
     dados_pca = plot_pca(dados=data, num_components=3, type=None)
     matrix = kmean_cluster(dados=dados_pca, n=6, type=None)
 
+    film_list = pd.read_csv('movies_titles_id.txt').values
     label = matrix[np.where(matrix[:, 0] == user_id)[0][0], 1]
 
-    ds = matrix[np.where(matrix[:, 1] == label)[0], 0]
+    users_of_same_cluster = matrix[np.where(matrix[:, 1] == label)[0], 0]
 
-    user_of_same_cluster = random.choice(ds)
-    list_liked_movies_of_random_user_of_cluster = get_liked_movies(user_id, user_of_same_cluster)
-
-    while not list_liked_movies_of_random_user_of_cluster:  # enquanto a lista for vazia procura outro user
-        user_of_same_cluster = random.choice(ds)
+    if option == 1:
+        user_of_same_cluster = random.choice(users_of_same_cluster)
         list_liked_movies_of_random_user_of_cluster = get_liked_movies(user_id, user_of_same_cluster)
 
-    choosed_film = random.choice(list_liked_movies_of_random_user_of_cluster)
-    film_list = pd.read_csv('movies_titles_id.txt').values
-    list_of_movies_liked = film_list[np.where(film_list[:, 0] == choosed_film)[0], 1]
+        while not list_liked_movies_of_random_user_of_cluster:  # enquanto a lista for vazia procura outro user
+            user_of_same_cluster = random.choice(users_of_same_cluster)
+            list_liked_movies_of_random_user_of_cluster = get_liked_movies(user_id, user_of_same_cluster)
+        choosed_film = random.choice(list_liked_movies_of_random_user_of_cluster)
+        list_of_movies_liked = film_list[np.where(film_list[:, 0] == choosed_film)[0], 1]
+        choosed_film_name = list_of_movies_liked[0]
+    elif option == 2:
+        list_movies_of_cluster = []
+        for user_2 in users_of_same_cluster:
+            for movie in get_liked_movies(user_id, user_2):
+                list_movies_of_cluster.append(movie)
 
-    choosed_film_name = list_of_movies_liked[0]
+        most_liked_film = Counter(list_movies_of_cluster)
+        choosed_film, count = most_liked_film.most_common(1)[0]
+        choosed_film_name = film_list[np.where(film_list[:, 0] == choosed_film)[0], 1][0]
 
-
+        print(choosed_film_name)
 
     return choosed_film_name, user_of_same_cluster
 
