@@ -7,6 +7,8 @@ import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
+from collections import Counter
+
 
 list_users = get_all_users()
 
@@ -70,7 +72,7 @@ def open_file():
 #sentiment = get_sentiment_review('1')
 #print(sentiment)
 
-
+'''
 def create_fake_dataset():
     with open('fake_dataset_with_ids_reviews.txt', 'w+') as dataset_file:
         dataset_file.write("review_id" + "," + "sentiment")
@@ -79,41 +81,9 @@ def create_fake_dataset():
             choosed_number = random.choice(numbers)
             print(choosed_number)
             dataset_file.write(line[-1] + "," + str(choosed_number) + "\n")
-            #print(i)
-        #dataset_file.write(list_movies[-1] + "\n")
 
-#create_fake_dataset()
-
-#dados = write_dataframe()
-#print(dados['B004EPYZQM'])
-
-
-#dados = pd.DataFrame(columns=['a','b','c'], index=['2','3'])
-#dados['a']['2'] = '2'
-
-#print(dados)
-
-#for date, row in dados.T.iteritems():
-    #print(row)
-    #df.ix[]
-#    for cenas in row:
-#        if cenas == dat:
-#            print(cenas)
-    #        row
-#dados = dados.fillna('-2')
-#print(dados.values)
-
-#data = open_file()
-#print(data)
-
-#oii = np.load('/tmp/123.npz')
-#dados = oii['dados']
-#dados.astype(int)
-
-
-#fig = plt.figure()
-#ax = fig.add_subplot(111, projection='3d')
-def plot_pca(dados, num_components):
+'''
+def pca(dados, num_components):
     #oii = np.load('/tmp/123.npz')
     #dados = oii['dados']
     dados.astype(int)
@@ -138,24 +108,32 @@ def kmean_cluster(dados):
 
 
 
-def recommender_film(user_id):
+def recommender_film(user_id, option):
     data = pd.read_csv('Dataset_clusters.txt', header=None)
-    dados = plot_pca(dados=data, num_components=2)
+    dados = pca(dados=data, num_components=2)
     matriz= kmean_cluster(dados)
     label = matriz[np.where(matriz[:,0]==user_id)[0][0],1]
-
-    ds = matriz[np.where(matriz[:,1] == label)[0],0]
-
-    user_of_same_cluster = random.choice(ds)
-    list_liked_movies_of_random_user_of_cluster = get_liked_movies(user_id, user_of_same_cluster)
-
-    while not list_liked_movies_of_random_user_of_cluster : # enquanto a lista for vazia procura outro user
-        user_of_same_cluster = random.choice(ds)
-        list_liked_movies_of_random_user_of_cluster = get_liked_movies(user_id, user_of_same_cluster)
-    choosed_film = random.choice(list_liked_movies_of_random_user_of_cluster)
     film_list = pd.read_csv('movies_titles_id.txt').values
-    choosed_film_name = film_list[np.where(film_list[:,0] == choosed_film)[0],1][0]
+    users_of_same_cluster = matriz[np.where(matriz[:,1] == label)[0],0]
+    if option == 1:
+        user_of_same_cluster = random.choice(users_of_same_cluster)
+        list_liked_movies_of_random_user_of_cluster = get_liked_movies(user_id, user_of_same_cluster)
 
+        while not list_liked_movies_of_random_user_of_cluster : # enquanto a lista for vazia procura outro user
+            user_of_same_cluster = random.choice(users_of_same_cluster)
+            list_liked_movies_of_random_user_of_cluster = get_liked_movies(user_id, user_of_same_cluster)
+        choosed_film = random.choice(list_liked_movies_of_random_user_of_cluster)
+        choosed_film_name = film_list[np.where(film_list[:,0] == choosed_film)[0],1][0]
+    elif option == 2:
+        list_movies_of_cluster = []
+        for user_2 in users_of_same_cluster:
+            for movie in get_liked_movies(user_id, user_2):
+                list_movies_of_cluster.append(movie)
+
+        most_liked_film = Counter(list_movies_of_cluster)
+        choosed_film, count = most_liked_film.most_common(1)[0]
+        choosed_film_name = film_list[np.where(film_list[:, 0] == choosed_film)[0], 1][0]
+        print(choosed_film_name)
     return choosed_film_name
 
 
@@ -175,6 +153,7 @@ def get_liked_movies(user_id_1, user_id_2):
 
 #cenas =pd.read_csv('Dataset_clusters.txt', header=None)
 #kmean_cluster(plot_pca(dados=cenas, num_components=2))
-#film_name =recommender_film('A328S9RN3U5M68')
+film_name =recommender_film('A328S9RN3U5M68', 2)
 
 #print(film_name)
+
