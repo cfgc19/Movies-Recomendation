@@ -8,8 +8,11 @@ from mpl_toolkits.mplot3d import Axes3D
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 from collections import Counter
+import math
+from sklearn.cluster import AgglomerativeClustering
 
 
+np.set_printoptions(threshold='nan')
 list_users = get_all_users()
 #print(len(list_users))
 
@@ -115,8 +118,6 @@ matrix = open_file()
 matrix = np.array(matrix)
 
 
-
-
 def plot_pca(dados, num_components, type):
     """
 
@@ -145,15 +146,19 @@ def plot_pca(dados, num_components, type):
     return dados
 
 
-#dados = plot_pca(matrix, 2, '2d')
-
-#a = 0
 def kmean_cluster(dados, n, type):
     kmeans = KMeans(n_clusters=n).fit(dados)
     clusters_numbers = np.array(kmeans.labels_)
     matrix_labels = np.concatenate((list_users[np.newaxis].T, clusters_numbers[np.newaxis].T), axis=1)
 
     centroids = kmeans.cluster_centers_
+
+    return matrix_labels
+
+def hierarchical_cluster(dados, n, type):
+    hierarchical = AgglomerativeClustering(n_clusters=n, linkage='ward').fit(dados)
+    clusters_numbers = np.array(hierarchical.labels_)
+
     if type =='2d':
         plt.figure()
         colors = ['b', 'y', 'c', 'm', 'r', 'g']
@@ -161,7 +166,6 @@ def kmean_cluster(dados, n, type):
             for j in range(0, n):
                 if clusters_numbers[i] == j:
                     plt.scatter(dados[i, 0], dados[i, 1], color=colors[j])
-        plt.scatter(centroids[:, 0], centroids[:, 1], marker='*', c='#050505', s=40)
         plt.title('k-Means for k=' + str(n))
         plt.show()
     elif type=='3d':
@@ -173,12 +177,8 @@ def kmean_cluster(dados, n, type):
             for j in range(0,n):
                 if clusters_numbers[i] == j:
                     ax.scatter(dados[i, 0], dados[i, 1], dados[i, 2], color=colors[j])
-        ax.scatter(centroids[:, 0], centroids[:, 1], centroids[:, 2], marker='*', c='#050505', s = 40)
         plt.title('k-Means for k='+str(n))
         plt.show()
-
-    return matrix_labels
-
 
 
 def get_liked_movies(user_id_1, user_id_2):
@@ -208,21 +208,27 @@ def get_liked_movies(user_id_1, user_id_2):
     return list_liked_movies
 
 
-user_id = 'ASURJI83YT577'
+user_id = 'A141HP4LYPWMSR'
 
 
-def recommender_film(user_id, option):
+def recommender_film(user_id, option, clustering_option):
     data = pd.read_csv('Dataset_clusters.txt')
+    users_list = data['users_id'].values
     data = data.drop('users_id', axis=1)
     data = data.as_matrix()
     data = data.astype(int)
     dados_pca = plot_pca(dados=data, num_components=3, type=None)
-    matrix = kmean_cluster(dados=dados_pca, n=6, type=None)
+
+    if clustering_option == 'kmean':
+        matrix = kmean_cluster(dados=dados_pca, n=10, type=None)
+    elif clustering_option == 'hierarchical':
+        matrix = hierarchical_cluster(dados=dados_pca, n=10, type=None)
 
     film_list = pd.read_csv('movies_titles_id.txt').values
     label = matrix[np.where(matrix[:, 0] == user_id)[0][0], 1]
 
-    users_of_same_cluster = matrix[np.where(matrix[:, 1] == label)[0], 0]
+    indexes_of_users_of_same_cluster = np.where(matrix[:, 1] == label)[0]
+    users_of_same_cluster = matrix[indexes_of_users_of_same_cluster, 0]
 
     if option == 1:
         user_of_same_cluster = random.choice(users_of_same_cluster)
@@ -245,6 +251,42 @@ def recommender_film(user_id, option):
         choosed_film_name = film_list[np.where(film_list[:, 0] == choosed_film)[0], 1][0]
 
         print(choosed_film_name)
+    elif option == 3:
+        nearest_user, index_user = get_nearest_user(user_id, users_of_same_cluster, dados_pca, users_list)
+        list_liked_movies_of_nearest_user = get_liked_movies(user_id, nearest_user)
+
+        print(index_user, nearest_user, len(users_of_same_cluster))
+        #print(list_liked_movies_of_nearest_user)
+        while not list_liked_movies_of_nearest_user:  # enquanto a lista for vazia procura outro user
+            print(index_user, nearest_user, len(users_of_same_cluster))
+            users_of_same_cluster = np.delete(users_of_same_cluster,index_user)
+            nearest_user, index_user = get_nearest_user(user_id, users_of_same_cluster, dados_pca, users_list)
+            list_liked_movies_of_nearest_user = get_liked_movies(user_id, nearest_user)
+
+        choosed_film = random.choice(list_liked_movies_of_nearest_user)
+        list_of_movies_liked = film_list[np.where(film_list[:, 0] == choosed_film)[0], 1]
+        choosed_film_name = list_of_movies_liked[0]
+        user_of_same_cluster = nearest_user
 
     return choosed_film_name, user_of_same_cluster
+
+
+def get_nearest_user(user_id, others_users, pca_data, users_list):
+    list_distances = []
+    point_user = np.where(users_list == user_id)[0]
+    #print(others_users)
+    for user in others_users:
+        coordinate = np.where(users_list == user)[0]
+        distance = math.sqrt(math.pow(point_user - pca_data[coordinate, 0], 2) + math.pow(point_user -
+                            pca_data[coordinate, 1],2) + math.pow(point_user - pca_data[coordinate, 2], 2))
+        list_distances.append(distance)
+
+    list_distances_2 = np.array(list_distances)
+    min_index_value = np.argmin(list_distances_2)
+    nearest_user = others_users[min_index_value]
+
+    return nearest_user, min_index_value
+
+def hierarchical_cluster():
+
 

@@ -37,9 +37,7 @@ class StartPage(tk.Frame):
         self.S.config(command=self.review_text.yview)
         self.review_text.config(yscrollcommand=self.S.set)
 
-
         self.label.pack(side="top", fill="x", pady=10)
-
 
         self.S1.pack(side="right", fill="y")
 

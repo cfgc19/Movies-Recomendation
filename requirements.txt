@@ -3,3 +3,4 @@ lxml
 bottlenose
 python-amazon-simple-product-api
 requests
+afinn
