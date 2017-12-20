@@ -208,9 +208,6 @@ def get_liked_movies(user_id_1, user_id_2):
     return list_liked_movies
 
 
-user_id = 'A141HP4LYPWMSR'
-
-
 def recommender_film(user_id, option, clustering_option):
     data = pd.read_csv('Dataset_clusters.txt')
     users_list = data['users_id'].values
@@ -240,6 +237,7 @@ def recommender_film(user_id, option, clustering_option):
         choosed_film = random.choice(list_liked_movies_of_random_user_of_cluster)
         list_of_movies_liked = film_list[np.where(film_list[:, 0] == choosed_film)[0], 1]
         choosed_film_name = list_of_movies_liked[0]
+
     elif option == 2:
         list_movies_of_cluster = []
         for user_2 in users_of_same_cluster:
@@ -286,7 +284,4 @@ def get_nearest_user(user_id, others_users, pca_data, users_list):
     nearest_user = others_users[min_index_value]
 
     return nearest_user, min_index_value
-
-def hierarchical_cluster():
-
 
