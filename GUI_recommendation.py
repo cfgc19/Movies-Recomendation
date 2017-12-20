@@ -1,9 +1,6 @@
 import Tkinter as tk     # python 2
 import tkFont as tkfont  # python 2
-from open_data import *
 from recommender_system import *
-from sent_analysis_final import final_review
-import tkMessageBox
 
 class SampleApp(tk.Tk):
 
@@ -22,34 +19,36 @@ class SampleApp(tk.Tk):
         frame.grid(row=0, column=0, sticky="nsew")
 
 class StartPage(tk.Frame):
+
     def recommender_film(self,value):
+
         name_film, similar_user = recommender_film(value,1)
         if self.review_text.winfo_exists():
             self.review_text.delete("1.0", "end")
         if self.text1.winfo_exists():
             self.text1.delete("1.0", "end")
 
-        self.S.pack(side="right", fill="y")
-
         self.review_text.pack(side="top", fill="y")
         self.review_text.insert("end",name_film)
 
-        self.S.config(command=self.review_text.yview)
         self.review_text.config(yscrollcommand=self.S.set)
 
-
         self.label.pack(side="top", fill="x", pady=10)
-
-
-        self.S1.pack(side="right", fill="y")
 
         self.text1.pack(side="top", fill="y")
         self.text1.insert("end", similar_user)
 
-        self.S1.config(command=self.text1.yview)
-        self.text1.config(yscrollcommand=self.S1.set)
+        self.label2.pack(side="top", fill="x", pady=10)
+        self.text2.pack(side="top", fill="y")
+        self.text2.insert("end", "Movies that you like")
+
+        self.label3.pack(side="top", fill="x", pady=10)
+        self.text3.pack(side="top", fill="y")
+        self.text3.insert("end", "Movies that you like")
 
     def __init__(self, parent, controller):
+
+
         tk.Frame.__init__(self, parent)
         self.controller = controller
         label = tk.Label(self, text="A tool for recommendatiom of movies", font=controller.title_font)
@@ -61,13 +60,21 @@ class StartPage(tk.Frame):
         self.om = tk.OptionMenu(self, self.v, *optionList, command=self.recommender_film)
         self.om.pack(side="top", padx = 10, pady = 10)
 
+        # recommended movie
         self.S = tk.Scrollbar(self)
         self.review_text = tk.Text(self, height=5, width=30)
 
+        # similar user
         self.label = tk.Label(self, text="Seems that you have similar tastes to...", font='courier')
-        self.S1 = tk.Scrollbar(self)
         self.text1 = tk.Text(self, height=5, width=30)
 
+        # movies liked
+        self.label2 = tk.Label(self, text="You already like: ", font='courier')
+        self.text2 = tk.Text(self, height=5, width=30)
+
+        # other recommended movies
+        self.label3 = tk.Label(self, text="You will possibly like: ", font='courier')
+        self.text3 = tk.Text(self, height=5, width=30)
 
 
 if __name__ == "__main__":

@@ -212,6 +212,7 @@ user_id = 'ASURJI83YT577'
 
 
 def recommender_film(user_id, option):
+
     data = pd.read_csv('Dataset_clusters.txt')
     data = data.drop('users_id', axis=1)
     data = data.as_matrix()
@@ -234,6 +235,7 @@ def recommender_film(user_id, option):
         choosed_film = random.choice(list_liked_movies_of_random_user_of_cluster)
         list_of_movies_liked = film_list[np.where(film_list[:, 0] == choosed_film)[0], 1]
         choosed_film_name = list_of_movies_liked[0]
+
     elif option == 2:
         list_movies_of_cluster = []
         for user_2 in users_of_same_cluster:
@@ -247,4 +249,6 @@ def recommender_film(user_id, option):
         print(choosed_film_name)
 
     return choosed_film_name, user_of_same_cluster
+
+recommender_film(user_id, 1)
 
