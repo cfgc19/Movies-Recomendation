@@ -21,33 +21,42 @@ class SampleApp(tk.Tk):
 class StartPage(tk.Frame):
 
     def recommender_film(self,value):
+        name_movies_list, movies_already_like, similiar_users= recommender_film(value,option=3, clustering_option='kmeans') #clusterion_option : kmeans, hierarchical, dbscan
+        text = ""
+        for movie in movies_already_like:
+            text = text + movie + "\n"
 
-        name_film, similar_user = recommender_film(value,1)
-        if self.review_text.winfo_exists():
+        if self.review_text.winfo_exists():  # apagar o texto se houver texto nas caixas de texto
             self.review_text.delete("1.0", "end")
         if self.text1.winfo_exists():
             self.text1.delete("1.0", "end")
+        if self.text2.winfo_exists():
+            self.text2.delete("1.0", "end")
+        if self.text3.winfo_exists():
+            self.text3.delete("1.0", "end")
 
         self.review_text.pack(side="top", fill="y")
-        self.review_text.insert("end",name_film)
+
+        print1 = name_movies_list[0]
+        self.review_text.insert("end", print1)
 
         self.review_text.config(yscrollcommand=self.S.set)
 
         self.label.pack(side="top", fill="x", pady=10)
 
         self.text1.pack(side="top", fill="y")
-        self.text1.insert("end", similar_user)
+        self.text1.insert("end", similiar_users[0])
 
         self.label2.pack(side="top", fill="x", pady=10)
         self.text2.pack(side="top", fill="y")
-        self.text2.insert("end", "Movies that you like")
+        self.text2.insert("end", text)
 
+        print2 = name_movies_list[1] + "\n" + name_movies_list[2]
         self.label3.pack(side="top", fill="x", pady=10)
         self.text3.pack(side="top", fill="y")
-        self.text3.insert("end", "Movies that you like")
+        self.text3.insert("end", print2)
 
     def __init__(self, parent, controller):
-
 
         tk.Frame.__init__(self, parent)
         self.controller = controller
@@ -62,19 +71,19 @@ class StartPage(tk.Frame):
 
         # recommended movie
         self.S = tk.Scrollbar(self)
-        self.review_text = tk.Text(self, height=5, width=30)
+        self.review_text = tk.Text(self, height=3, width=30)
 
         # similar user
         self.label = tk.Label(self, text="Seems that you have similar tastes to...", font='courier')
-        self.text1 = tk.Text(self, height=5, width=30)
+        self.text1 = tk.Text(self, height=3, width=30)
 
         # movies liked
         self.label2 = tk.Label(self, text="You already like: ", font='courier')
-        self.text2 = tk.Text(self, height=5, width=30)
+        self.text2 = tk.Text(self, height=4, width=30)
 
         # other recommended movies
         self.label3 = tk.Label(self, text="You will possibly like: ", font='courier')
-        self.text3 = tk.Text(self, height=5, width=30)
+        self.text3 = tk.Text(self, height=4, width=30)
 
 
 if __name__ == "__main__":
