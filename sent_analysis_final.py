@@ -39,7 +39,7 @@ def nltk_method(review):
                                                             # vai de -1 a 1
     if polarity > 0.2:
         score = 1
-    elif polarity < 0.2:
+    elif polarity < -0.2:
         score = -1
     else:
         score = 0
@@ -97,6 +97,7 @@ def get_final_score(score_1,score_2,score_3):
 
 def remove_stopwords(review):
     stop_words = stopwords.words('english')
+    #print(stopwords)
     list_words = review.split(' ')
     # print(len(list_words))
     list_words_new = []
@@ -135,7 +136,6 @@ def final_score(score1, score2, score3, score4):
         occur = occurrences(list_scores)
         return unq_scores[np.where( np.array(occur) == 2)[0]][0]
 
-
 def final_review(review):
     words = nltk.word_tokenize(review)
     tokens = nltk.pos_tag(words)
@@ -173,7 +173,6 @@ def final_review(review):
     else:
         score_str = "Neutral"
     return score_str
-
 
 def add_negation_suffixes(tokens):
     """
@@ -254,12 +253,10 @@ def save_file():
     scores_5 = []
     scores_6 = []
     scores_7 = []
-    scores_8 = []
-    scores_9 = []
-    scores_10 = []
-    final_scores = []
-
+    i = 0
     for review in reviews:
+        i+=1
+        print(i)
         words = nltk.word_tokenize(review)
         tokens = nltk.pos_tag(words)
 
@@ -267,34 +264,23 @@ def save_file():
         words_without_sw = nltk.word_tokenize(review_without_sw)
         tokens_without_sw = nltk.pos_tag(words_without_sw)
 
-        list_words_without_DT_IN = []
-        list_words_without_DT_IN_stopwords = []
-
-        for token in tokens:
-            if token[1] != 'DT' or token[1] != 'IN':
-                list_words_without_DT_IN.append(token[0])
+        list_words_without_stopwords = []
 
         for token in tokens_without_sw:
-            if token[1] != 'DT' or token[1] != 'IN':
-                list_words_without_DT_IN_stopwords.append(token[0])
+            list_words_without_stopwords.append(token[0])
 
-        string_DT_IN = ' '.join(list_words_without_DT_IN)
-        string_DT_IN_SW = ' '.join(list_words_without_DT_IN_stopwords)
+        string_SW = ' '.join(list_words_without_stopwords)
 
 
         score_1 = opinion_lexicon_method(review)
         score_2 = nltk_method(review)
         score_3 = sentiment_afinn(review)
 
-        score_4 = opinion_lexicon_method(string_DT_IN)
-        score_5 = nltk_method(string_DT_IN)
-        score_6 = sentiment_afinn(string_DT_IN)
+        score_4 = opinion_lexicon_method(string_SW)
+        score_5 = nltk_method(string_SW)
+        score_6 = sentiment_afinn(string_SW)
 
-        score_7 = opinion_lexicon_method(string_DT_IN_SW)
-        score_8 = nltk_method(string_DT_IN_SW)
-        score_9 = sentiment_afinn(string_DT_IN_SW)
-
-        score_10 = afinn_handling_neg_score(review)
+        score_7 = afinn_handling_neg_score(review)
 
         scores_1.append(score_1)
         scores_2.append(score_2)
@@ -303,14 +289,13 @@ def save_file():
         scores_5.append(score_5)
         scores_6.append(score_6)
         scores_7.append(score_7)
-        scores_8.append(score_8)
-        scores_9.append(score_9)
-        scores_10.append(score_10)
-    '''
-    with open('sentiment_analysis.txt', 'w') as file:
-        file.write('{},{},{},{},{},{},{},{},{},{},{}\n'.format('id', 'opinion_lexicon', 'nltk', 'afinn', 'opinion_lexicon_without_DT_IN',
-                                             'nltk_without_DT_IN', 'afinn_without_DT_IN', 'opinion_lexicon_withoutSW_DT_IN',
-                                             'nltk_withoutSW_DT_IN', 'afinn_withoutSW_DT_IN', 'afinn_handling_negation'))
+
+    with open('sentiment_analysis_new.txt', 'w') as file:
+        file.write('{},{},{},{},{},{},{},{}\n'.format('id', 'opinion_lexicon', 'nltk', 'afinn', 'opinion_lexicon_withoutSW',
+                                             'nltk_withoutSW', 'afinn_withoutSW', 'afinn_handling_negation'))
         for i in range(0, len(scores_1)):
-            file.write('{},{},{},{},{},{},{},{},{},{},{}\n'.format(ids_reviews[i], scores_1[i], scores_2[i], scores_3[i], scores_4[i], scores_5[i],scores_6[i], scores_7[i], scores_8[i], scores_9[i], scores_10[i]))
-    '''
+            file.write('{},{},{},{},{},{},{},{}\n'.format(ids_reviews[i], scores_1[i], scores_2[i], scores_3[i], scores_4[i], scores_5[i], scores_6[i], scores_7[i]))
+
+
+
+save_file()

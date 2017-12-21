@@ -10,7 +10,6 @@ def get_all_dataset():
     with open('Dataset_SNAP_with_movies.txt', 'r') as movie_file:
         reader = csv.reader(movie_file)
         for i in reader:
-            #print(i)
             for element in i:
                 print(element)
 

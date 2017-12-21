@@ -132,14 +132,14 @@ def plot_pca(dados, num_components, type):
         fig = plt.figure()
         ax = fig.add_subplot(111, projection = '3d')
         ax.scatter(dados[:,0], dados[:,1], dados[:,2])
-        plt.title('PCA with '+str(num_components)+' components')
+        #plt.title('Dados resultantes do PCA. Escolha de '+str(num_components)+' componentes')
         plt.show()
 
     elif type=='2d':
         fig = plt.figure()
         ax = fig.add_subplot(111)
         ax.scatter(dados[:,0], dados[:,1])
-        plt.title('PCA with '+str(num_components)+' components')
+        #plt.title('Dados resultantes do PCA. Escolha de '+str(num_components)+' componentes')
         plt.show()
 
     return dados
@@ -156,7 +156,7 @@ def kmean_cluster(dados, n, type):
     centroids = kmeans.cluster_centers_
     if type =='2d':
         plt.figure()
-        colors = ['b', 'y', 'c', 'm', 'r', 'g']
+        colors = ['b', 'y', 'c', 'm', 'r', 'g','b', 'y', 'c', 'm','r', 'g']
         for i in range(0, len(dados[:, 0])):
             for j in range(0, n):
                 if clusters_numbers[i] == j:
@@ -168,7 +168,7 @@ def kmean_cluster(dados, n, type):
 
         fig = plt.figure()
         ax = Axes3D(fig, rect=[0, 0, .95, 1], elev=48, azim=134)
-        colors = ['b', 'y', 'c', 'm','r', 'g']
+        colors = ['b', 'y', 'c', 'm','r', 'g','b', 'y', 'c', 'm','r', 'g']
         for i in range(0, len(dados[:, 0])):
             for j in range(0,n):
                 if clusters_numbers[i] == j:
@@ -217,13 +217,14 @@ def recommender_film(user_id, option):
     data = data.drop('users_id', axis=1)
     data = data.as_matrix()
     data = data.astype(int)
-    dados_pca = plot_pca(dados=data, num_components=3, type=None)
-    matrix = kmean_cluster(dados=dados_pca, n=6, type=None)
+    dados_pca = plot_pca(dados=data, num_components=2, type='2d')
+    matrix = kmean_cluster(dados=dados_pca, n=10, type='3d')
 
     film_list = pd.read_csv('movies_titles_id.txt').values
     label = matrix[np.where(matrix[:, 0] == user_id)[0][0], 1]
-
+    print(label)
     users_of_same_cluster = matrix[np.where(matrix[:, 1] == label)[0], 0]
+    print(matrix[np.where(matrix[:, 1] == '0')[0], 0])
 
     if option == 1:
         user_of_same_cluster = random.choice(users_of_same_cluster)
