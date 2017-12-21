@@ -8,19 +8,17 @@ from mpl_toolkits.mplot3d import Axes3D
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 from collections import Counter
+import math
+from sklearn.cluster import AgglomerativeClustering, DBSCAN
 
 
+np.set_printoptions(threshold='nan')
 list_users = get_all_users()
-#print(len(list_users))
 
 list_movies = get_movies('id')
 
-
 list_movie_user_review = get_user_and_movie_and_review_id()
 
-
-
-#dict = get_dict_users_movies()
 
 def get_review_id(movie_id, user_id):
     """
@@ -30,13 +28,12 @@ def get_review_id(movie_id, user_id):
     :return:
     """
     for i in list_movie_user_review:
-
         if i[0] == movie_id and i[1] == user_id:
             return i[2]
 
+
 def get_sentiment_review(review_id):
     """
-
     Get score from a review.
     :param review_id:
     :return:
@@ -45,10 +42,11 @@ def get_sentiment_review(review_id):
         reader = csv.reader(movie_file)
         next(reader)
         for i in reader:
-            #print(i)
-            #print(review_id)
+            # print(i)
+            # print(review_id)
             if i[0] == review_id:
                 return i[7]
+
 
 def write_dataframe():
     """
@@ -62,18 +60,18 @@ def write_dataframe():
     :return:
     """
     dados = pd.DataFrame(columns=list_movies, index=list_users)
-    #dados['users_ids'] = list_users
-    l =0
+    # dados['users_ids'] = list_users
+    l = 0
     for user in list_users:
-        #print(l)
+        # print(l)
         list_movies_by_user = get_movies_of_a_user(user)
         for movie in list_movies_by_user:
             review_id = get_review_id(movie, user)
             sentiment = get_sentiment_review(review_id)
-            #print(sentiment)
+            # print(sentiment)
             dados[movie][user] = sentiment
         l= l+1
-    dados = dados.fillna('-2') # preenche os nan com -2
+    dados = dados.fillna('-2')  # preenche os nan com -2
     dados.to_csv('Dataset_clusters_ola.txt', header=None, index=None, sep=',', mode='w')
     return dados
 
@@ -96,6 +94,7 @@ def write_dataset():
         for i in range(0, len(data)):
             dataset_file.write(list_users[i]+','+data[i])
 
+
 def open_file():
     """
     Open data matrix
@@ -115,8 +114,6 @@ matrix = open_file()
 matrix = np.array(matrix)
 
 
-
-
 def plot_pca(dados, num_components, type):
     """
 
@@ -128,14 +125,15 @@ def plot_pca(dados, num_components, type):
     pca = PCA(n_components=num_components, svd_solver='full')
     pca.fit(dados)
     dados = pca.transform(dados)
-    if type =='3d':
+    if type == '3d':
         fig = plt.figure()
+
         ax = fig.add_subplot(111, projection = '3d')
         ax.scatter(dados[:,0], dados[:,1], dados[:,2])
         #plt.title('Dados resultantes do PCA. Escolha de '+str(num_components)+' componentes')
         plt.show()
 
-    elif type=='2d':
+    elif type == '2d':
         fig = plt.figure()
         ax = fig.add_subplot(111)
         ax.scatter(dados[:,0], dados[:,1])
@@ -145,26 +143,58 @@ def plot_pca(dados, num_components, type):
     return dados
 
 
-#dados = plot_pca(matrix, 2, '2d')
-
-#a = 0
 def kmean_cluster(dados, n, type):
     kmeans = KMeans(n_clusters=n).fit(dados)
     clusters_numbers = np.array(kmeans.labels_)
     matrix_labels = np.concatenate((list_users[np.newaxis].T, clusters_numbers[np.newaxis].T), axis=1)
 
     centroids = kmeans.cluster_centers_
-    if type =='2d':
+    plot_cluster(dados, n, type, clusters_numbers, 'Kmeans', centroids)
+
+    return matrix_labels
+
+
+def hierarchical_cluster(dados, n, type):
+    hierarchical = AgglomerativeClustering(n_clusters=n, linkage='average').fit(dados)  # linkage pode ser ward, average, complete
+    clusters_numbers = np.array(hierarchical.labels_)
+
+    matrix_labels = np.concatenate((list_users[np.newaxis].T, clusters_numbers[np.newaxis].T), axis=1)
+
+    plot_cluster(dados, n,type, clusters_numbers, 'Hierarchical', None)
+
+    return matrix_labels
+
+
+def dbscan(dados, type):
+    dbscan = DBSCAN(min_samples=6, metric='euclidean').fit(dados)
+    clusters_numbers = np.array(dbscan.labels_)
+    number_of_labels = len(set(clusters_numbers)) -1
+
+    matrix_labels = np.concatenate((list_users[np.newaxis].T, clusters_numbers[np.newaxis].T), axis=1)
+
+    plot_cluster(dados, number_of_labels, type, clusters_numbers, 'DBSCAN', None)
+
+    return matrix_labels
+
+
+def plot_cluster(dados, n, type, clusters_numbers, cluster_name, centroids):
+    begin = 0
+    end = n
+    if cluster_name == 'DBSCAN':
+        begin = -1
+        end = n +1
+    if type == '2d':
         plt.figure()
         colors = ['b', 'y', 'c', 'm', 'r', 'g','b', 'y', 'c', 'm','r', 'g']
         for i in range(0, len(dados[:, 0])):
-            for j in range(0, n):
+            for j in range(begin, n):
                 if clusters_numbers[i] == j:
                     plt.scatter(dados[i, 0], dados[i, 1], color=colors[j])
-        plt.scatter(centroids[:, 0], centroids[:, 1], marker='*', c='#050505', s=40)
-        plt.title('k-Means for k=' + str(n))
+        if cluster_name == 'Kmeans':
+            plt.scatter(centroids[:, 0], centroids[:, 1], marker='*', c='#050505', s=40)
+        plt.title(cluster_name + ' for k=' + str(end))
         plt.show()
-    elif type=='3d':
+    elif type == '3d':
 
         fig = plt.figure()
         ax = Axes3D(fig, rect=[0, 0, .95, 1], elev=48, azim=134)
@@ -173,29 +203,41 @@ def kmean_cluster(dados, n, type):
             for j in range(0,n):
                 if clusters_numbers[i] == j:
                     ax.scatter(dados[i, 0], dados[i, 1], dados[i, 2], color=colors[j])
-        ax.scatter(centroids[:, 0], centroids[:, 1], centroids[:, 2], marker='*', c='#050505', s = 40)
-        plt.title('k-Means for k='+str(n))
+        if cluster_name == 'Kmeans':
+            ax.scatter(centroids[:, 0], centroids[:, 1], centroids[:, 2], marker='*', c='#050505', s=40)
+        plt.title(cluster_name + ' for k=' + str(end))
         plt.show()
 
-    return matrix_labels
 
+def list_of_only_liked_movies():
+    dataframe = pd.DataFrame(columns=['users_id', 'liked_movies'])
+    for user in list_users:
+        print(user)
+        list_liked_movies = []
+        films_saw_by_user_1 = get_movies_of_a_user(user)
+        for movie in films_saw_by_user_1:
+            review_id = get_review_id(movie_id=movie, user_id=user)
+            sentiment = get_sentiment_review(review_id)
+            if sentiment == '1':
+                list_liked_movies.append(movie)  # filmes que ele GOSTOU
+        dataframe = dataframe.append({'users_id': user, 'liked_movies': list_liked_movies}, ignore_index=True)
+    dataframe.to_csv("list_of_liked_movies.txt", sep=',', mode='w', index=False)
 
+#list_of_only_liked_movies()
 
 def get_liked_movies(user_id_1, user_id_2):
     """
-
     Get list of the movies that both users liked
     :param user_id_1: id of first user
     :param user_id_2: id of the second one
     :return:
-
     """
     films_saw_by_user_1 = get_movies_of_a_user(user_id_1)  # filmes que o primeiro user deu review (viu)
     films_saw_by_user_2 = get_movies_of_a_user(user_id_2)  # filmes que o segundo user deu review (viu)
 
     list(set(films_saw_by_user_1).intersection(films_saw_by_user_2))
     films_user_2 = list(set(films_saw_by_user_2)-set(films_saw_by_user_1))  # filmes que o user_2 viu mas o user_1 nao
-    list_liked_movies =[]
+    list_liked_movies = []
 
     for i in films_user_2:
 
@@ -208,48 +250,110 @@ def get_liked_movies(user_id_1, user_id_2):
     return list_liked_movies
 
 
-user_id = 'ASURJI83YT577'
-
-
-def recommender_film(user_id, option):
-
+def recommender_film(user_id, option, clustering_option):
     data = pd.read_csv('Dataset_clusters.txt')
+    movies_liked = pd.read_csv('list_of_liked_movies.txt').values
+    users_list = data['users_id'].values
     data = data.drop('users_id', axis=1)
     data = data.as_matrix()
     data = data.astype(int)
-    dados_pca = plot_pca(dados=data, num_components=2, type='2d')
-    matrix = kmean_cluster(dados=dados_pca, n=10, type='3d')
+    dados_pca = plot_pca(dados=data, num_components=3, type=None)
+
+    if clustering_option == 'kmeans':
+        matrix = kmean_cluster(dados=dados_pca, n=6, type=None)
+    elif clustering_option == 'hierarchical':
+        matrix = hierarchical_cluster(dados=dados_pca, n=6, type=None)
+    elif clustering_option == 'dbscan':
+        matrix = dbscan(dados=dados_pca, type=None)
 
     film_list = pd.read_csv('movies_titles_id.txt').values
     label = matrix[np.where(matrix[:, 0] == user_id)[0][0], 1]
-    print(label)
-    users_of_same_cluster = matrix[np.where(matrix[:, 1] == label)[0], 0]
-    print(matrix[np.where(matrix[:, 1] == '0')[0], 0])
+    indexes_of_users_of_same_cluster = np.where(matrix[:, 1] == label)[0]
 
-    if option == 1:
-        user_of_same_cluster = random.choice(users_of_same_cluster)
-        list_liked_movies_of_random_user_of_cluster = get_liked_movies(user_id, user_of_same_cluster)
+    users_of_same_cluster = movies_liked[indexes_of_users_of_same_cluster, :]
+    users_of_same_cluster_with_positive_reviews = users_of_same_cluster[np.where(users_of_same_cluster[:, 1] != '[]')[0]]
+    choosed_film_list = set()
+    film_list_first_user = []
+    films_saw_by_user = get_movies_of_a_user(user_id)  # filmes que o primeiro user deu review (viu)
 
-        while not list_liked_movies_of_random_user_of_cluster:  # enquanto a lista for vazia procura outro user
-            user_of_same_cluster = random.choice(users_of_same_cluster)
-            list_liked_movies_of_random_user_of_cluster = get_liked_movies(user_id, user_of_same_cluster)
-        choosed_film = random.choice(list_liked_movies_of_random_user_of_cluster)
-        list_of_movies_liked = film_list[np.where(film_list[:, 0] == choosed_film)[0], 1]
-        choosed_film_name = list_of_movies_liked[0]
+    films_positives_by_first_user = eval(movies_liked[np.where(movies_liked[:, 0] == user_id)[0][0],1])
+    for film in films_positives_by_first_user:
+        list_of_movies_liked = film_list[np.where(film_list[:, 0] == film)[0], 1]
+        film_name = list_of_movies_liked[0]
+        film_list_first_user.append(film_name)
 
-    elif option == 2:
-        list_movies_of_cluster = []
-        for user_2 in users_of_same_cluster:
-            for movie in get_liked_movies(user_id, user_2):
-                list_movies_of_cluster.append(movie)
+    similar_users = []
+    while(True):
+        if option == 1:
+            index_random_user = random.choice(range(len(users_of_same_cluster_with_positive_reviews[:,0])))
+            films_positives_by_user_random = eval(users_of_same_cluster_with_positive_reviews[index_random_user,1]) # filmes que o segundo user viu e GOSTOU
+            best_movies_of_random_user = list(set(films_positives_by_user_random)-set(films_saw_by_user))  # filmes que o user_2 viu mas o user_1 nao
 
-        most_liked_film = Counter(list_movies_of_cluster)
-        choosed_film, count = most_liked_film.most_common(1)[0]
-        choosed_film_name = film_list[np.where(film_list[:, 0] == choosed_film)[0], 1][0]
+            while not best_movies_of_random_user:  # enquanto a lista for vazia procura outro user
+                print(len(users_of_same_cluster_with_positive_reviews))
+                users_of_same_cluster = np.delete(users_of_same_cluster_with_positive_reviews,index_user,0)
+                index_random_user = random.choice(range(len(users_of_same_cluster_with_positive_reviews[:,0])))
+                films_positives_by_user_random = eval(users_of_same_cluster_with_positive_reviews[index_random_user, 1]) # filmes que o segundo user viu e GOSTOU
+                best_movies_of_random_user = list(set(films_positives_by_user_random) - set(films_saw_by_user))  # filmes que o user_2 viu mas o user_1 nao
+            choosed_film = random.choice(best_movies_of_random_user)
+            list_of_movies_liked = film_list[np.where(film_list[:, 0] == choosed_film)[0], 1]
+            choosed_film_name = list_of_movies_liked[0]
+            choosed_film_list.add(choosed_film_name)
+        elif option == 2:
+            list_movies_of_cluster = []
+            for user_2 in users_of_same_cluster:
+                for movie in get_liked_movies(user_id, user_2):
+                    list_movies_of_cluster.append(movie)
 
-        print(choosed_film_name)
+            best_movies = Counter(list_movies_of_cluster)
+            for i in range(0, 3):
+                choosed_film, count = best_movies.most_common(3)[i]
+                choosed_film_name = film_list[np.where(film_list[:, 0] == choosed_film)[0], 1][0]
+                choosed_film_list.add(choosed_film_name)
 
-    return choosed_film_name, user_of_same_cluster
+        elif option == 3:
+            nearest_user, index_user = get_nearest_user(user_id, users_of_same_cluster_with_positive_reviews[:,0], dados_pca, users_list)
+            films_positives_by_nearest_user = eval(users_of_same_cluster_with_positive_reviews[
+                index_user, 1] ) # filmes que o segundo user viu e GOSTOU
 
-recommender_film(user_id, 1)
+            best_movies_of_nearest_user = list(set(films_positives_by_nearest_user) - set(
+                films_saw_by_user))  # filmes que o user_2 viu mas o user_1 nao
+
+            while not best_movies_of_nearest_user:  # enquanto a lista for vazia procura outro user
+                users_of_same_cluster_with_positive_reviews = np.delete(users_of_same_cluster_with_positive_reviews,index_user, 0)
+                nearest_user, index_user = get_nearest_user(user_id, users_of_same_cluster_with_positive_reviews[:, 0],
+                                                            dados_pca, users_list)
+                films_positives_by_nearest_user = eval(users_of_same_cluster_with_positive_reviews[
+                    index_user, 1])  # filmes que o segundo user viu e GOSTOU
+                best_movies_of_nearest_user = list(set(films_positives_by_nearest_user) - set(films_saw_by_user))  # filmes que o user_2 viu mas o user_1 nao
+            users_of_same_cluster_with_positive_reviews = np.delete(users_of_same_cluster_with_positive_reviews,
+                                                                    index_user, 0)
+            choosed_film = random.choice(best_movies_of_nearest_user)
+
+            list_of_movies_liked = film_list[np.where(film_list[:, 0] == choosed_film)[0], 1]
+            choosed_film_name = list_of_movies_liked[0]
+            choosed_film_list.add(choosed_film_name)
+            similar_users.append(nearest_user)
+
+        if(len(choosed_film_list) == 3):
+            choosed_film_list = list(choosed_film_list)
+            break
+    return choosed_film_list, film_list_first_user, similar_users
+
+
+def get_nearest_user(user_id, others_users, pca_data, users_list):
+    list_distances = []
+    point_user = np.where(users_list == user_id)[0]
+    #print(others_users)
+    for user in others_users:
+        coordinate = np.where(users_list == user)[0]
+        distance = math.sqrt(math.pow(point_user - pca_data[coordinate, 0], 2) + math.pow(point_user -
+                            pca_data[coordinate, 1],2) + math.pow(point_user - pca_data[coordinate, 2], 2))
+        list_distances.append(distance)
+
+    list_distances_2 = np.array(list_distances)
+    min_index_value = np.argmin(list_distances_2)
+    nearest_user = others_users[min_index_value]
+
+    return nearest_user, min_index_value
 
