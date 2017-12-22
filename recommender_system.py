@@ -76,7 +76,7 @@ def write_dataframe():
     return dados
 
 
-def write_dataset():
+def complete_dataset():
     """
     Complete the previous matrix with header and instances id
     :return:
@@ -114,70 +114,108 @@ matrix = open_file()
 matrix = np.array(matrix)
 
 
-def plot_pca(dados, num_components, type):
+def plot_pca(data, num_components, type):
     """
+    Plot data from PCA
 
-    :param dados: data matrix
+    :param data: data matrix
     :param num_components: number of components for the PCA
     :return:
     """
-    dados = dados.astype(int)
+    data = data.astype(int)
     pca = PCA(n_components=num_components, svd_solver='full')
-    pca.fit(dados)
-    dados = pca.transform(dados)
+    pca.fit(data)
+    data = pca.transform(data)
     if type == '3d':
         fig = plt.figure()
 
         ax = fig.add_subplot(111, projection = '3d')
-        ax.scatter(dados[:,0], dados[:,1], dados[:,2])
+        ax.scatter(data[:, 0], data[:, 1], data[:, 2])
         #plt.title('Dados resultantes do PCA. Escolha de '+str(num_components)+' componentes')
         plt.show()
 
     elif type == '2d':
         fig = plt.figure()
         ax = fig.add_subplot(111)
-        ax.scatter(dados[:,0], dados[:,1])
+        ax.scatter(data[:, 0], data[:, 1])
         #plt.title('Dados resultantes do PCA. Escolha de '+str(num_components)+' componentes')
         plt.show()
 
-    return dados
+    return data
 
 
-def kmean_cluster(dados, n, type):
-    kmeans = KMeans(n_clusters=n).fit(dados)
+def kmean_cluster(data, n, type):
+    """
+    Clustering with k-means algorithm
+
+    :param data: reduced data from PCA
+    :param n: number of clusters
+    :param type: number of dimensions, could be '2d' or '3d'
+    :return:
+    """
+    kmeans = KMeans(n_clusters=n).fit(data)
     clusters_numbers = np.array(kmeans.labels_)
     matrix_labels = np.concatenate((list_users[np.newaxis].T, clusters_numbers[np.newaxis].T), axis=1)
 
     centroids = kmeans.cluster_centers_
-    plot_cluster(dados, n, type, clusters_numbers, 'Kmeans', centroids)
+    plot_cluster(data, n, type, clusters_numbers, 'Kmeans', centroids)
 
     return matrix_labels
 
 
-def hierarchical_cluster(dados, n, type):
-    hierarchical = AgglomerativeClustering(n_clusters=n, linkage='average').fit(dados)  # linkage pode ser ward, average, complete
+def hierarchical_cluster(data, n, type):
+    """
+    Clustering with hirarchical agglomerative algorithm
+
+    :param data: reduced data from PCA
+    :param n: number of clusters
+    :param type: number of dimensions, could be '2d' or '3d'
+    :return:
+    """
+    hierarchical = AgglomerativeClustering(n_clusters=n, linkage='average').fit(data)  # linkage pode ser ward, average, complete
     clusters_numbers = np.array(hierarchical.labels_)
+
 
     matrix_labels = np.concatenate((list_users[np.newaxis].T, clusters_numbers[np.newaxis].T), axis=1)
 
-    plot_cluster(dados, n,type, clusters_numbers, 'Hierarchical', None)
+    plot_cluster(data, n, type, clusters_numbers, 'Hierarchical', None)
 
     return matrix_labels
 
 
-def dbscan(dados, type):
-    dbscan = DBSCAN(min_samples=6, metric='euclidean').fit(dados)
+def dbscan(data, type):
+    """
+    Clustering with DBSCAN algorithm
+
+    :param data: reduced data from PCA
+    :param type: number of dimensions, could be '2d' or '3d'
+    :return:
+    """
+    dbscan = DBSCAN(min_samples=6, metric='euclidean').fit(data)
     clusters_numbers = np.array(dbscan.labels_)
+
     number_of_labels = len(set(clusters_numbers)) -1
 
     matrix_labels = np.concatenate((list_users[np.newaxis].T, clusters_numbers[np.newaxis].T), axis=1)
 
-    plot_cluster(dados, number_of_labels, type, clusters_numbers, 'DBSCAN', None)
+    plot_cluster(data, number_of_labels, type, clusters_numbers, 'DBSCAN', None)
 
     return matrix_labels
 
 
-def plot_cluster(dados, n, type, clusters_numbers, cluster_name, centroids):
+
+def plot_cluster(data, n, type, clusters_numbers, cluster_name, centroids):
+    """
+
+    :param data:
+    :param n:
+    :param type:
+    :param clusters_numbers:
+    :param cluster_name:
+    :param centroids:
+    :return:
+    """
+
     begin = 0
     end = n
     if cluster_name == 'DBSCAN':
@@ -185,11 +223,11 @@ def plot_cluster(dados, n, type, clusters_numbers, cluster_name, centroids):
         end = n +1
     if type == '2d':
         plt.figure()
-        colors = ['b', 'y', 'c', 'm', 'r', 'g','b', 'y', 'c', 'm','r', 'g']
-        for i in range(0, len(dados[:, 0])):
+        colors = ['b', 'y', 'c', 'm', 'r', 'g', 'k', '0.25', '0.75', '0.85', '0.1']
+        for i in range(0, len(data[:, 0])):
             for j in range(begin, n):
                 if clusters_numbers[i] == j:
-                    plt.scatter(dados[i, 0], dados[i, 1], color=colors[j])
+                    plt.scatter(data[i, 0], data[i, 1], color=colors[j])
         if cluster_name == 'Kmeans':
             plt.scatter(centroids[:, 0], centroids[:, 1], marker='*', c='#050505', s=40)
         plt.title(cluster_name + ' for k=' + str(end))
@@ -198,11 +236,12 @@ def plot_cluster(dados, n, type, clusters_numbers, cluster_name, centroids):
 
         fig = plt.figure()
         ax = Axes3D(fig, rect=[0, 0, .95, 1], elev=48, azim=134)
-        colors = ['b', 'y', 'c', 'm','r', 'g','b', 'y', 'c', 'm','r', 'g']
-        for i in range(0, len(dados[:, 0])):
+        colors = ['b', 'y', 'c', 'm','r', 'g', 'k', '0.25','0.75', '0.85', '0.1']
+
+        for i in range(0, len(data[:, 0])):
             for j in range(0,n):
                 if clusters_numbers[i] == j:
-                    ax.scatter(dados[i, 0], dados[i, 1], dados[i, 2], color=colors[j])
+                    ax.scatter(data[i, 0], data[i, 1], data[i, 2], c=colors[j])
         if cluster_name == 'Kmeans':
             ax.scatter(centroids[:, 0], centroids[:, 1], centroids[:, 2], marker='*', c='#050505', s=40)
         plt.title(cluster_name + ' for k=' + str(end))
@@ -210,9 +249,12 @@ def plot_cluster(dados, n, type, clusters_numbers, cluster_name, centroids):
 
 
 def list_of_only_liked_movies():
+    """
+    Creation of a list with all movies liked by each user
+    :return:
+    """
     dataframe = pd.DataFrame(columns=['users_id', 'liked_movies'])
     for user in list_users:
-        print(user)
         list_liked_movies = []
         films_saw_by_user_1 = get_movies_of_a_user(user)
         for movie in films_saw_by_user_1:
@@ -223,7 +265,6 @@ def list_of_only_liked_movies():
         dataframe = dataframe.append({'users_id': user, 'liked_movies': list_liked_movies}, ignore_index=True)
     dataframe.to_csv("list_of_liked_movies.txt", sep=',', mode='w', index=False)
 
-#list_of_only_liked_movies()
 
 def get_liked_movies(user_id_1, user_id_2):
     """
@@ -245,26 +286,34 @@ def get_liked_movies(user_id_1, user_id_2):
         sentiment = get_sentiment_review(review_id)
 
         if sentiment == '1':
-            list_liked_movies.append(i)  # filmes que ele GOSTOU
+            list_liked_movies.append(i)  # filmes dos quais o user_2 GOSTOU
 
     return list_liked_movies
 
 
 def recommender_film(user_id, option, clustering_option):
+    """
+    Recommendation
+
+    :param user_id: user that need a recommendation
+    :param option: 1,2,3
+    :param clustering_option: algorithm used for clustering
+    :return:
+    """
     data = pd.read_csv('Dataset_clusters.txt')
     movies_liked = pd.read_csv('list_of_liked_movies.txt').values
     users_list = data['users_id'].values
     data = data.drop('users_id', axis=1)
     data = data.as_matrix()
     data = data.astype(int)
-    dados_pca = plot_pca(dados=data, num_components=3, type=None)
+    dados_pca = plot_pca(data=data, num_components=3, type=None)
 
     if clustering_option == 'kmeans':
-        matrix = kmean_cluster(dados=dados_pca, n=6, type=None)
+        matrix = kmean_cluster(data=dados_pca, n=6, type=None)
     elif clustering_option == 'hierarchical':
-        matrix = hierarchical_cluster(dados=dados_pca, n=6, type=None)
+        matrix = hierarchical_cluster(data=dados_pca, n=6, type=None)
     elif clustering_option == 'dbscan':
-        matrix = dbscan(dados=dados_pca, type=None)
+        matrix = dbscan(data=dados_pca, type=None)
 
     film_list = pd.read_csv('movies_titles_id.txt').values
     label = matrix[np.where(matrix[:, 0] == user_id)[0][0], 1]
@@ -342,6 +391,14 @@ def recommender_film(user_id, option, clustering_option):
 
 
 def get_nearest_user(user_id, others_users, pca_data, users_list):
+    """
+    Get nearest user to user_id
+    :param user_id:
+    :param others_users:
+    :param pca_data:
+    :param users_list:
+    :return:
+    """
     list_distances = []
     point_user = np.where(users_list == user_id)[0]
     #print(others_users)
@@ -356,4 +413,12 @@ def get_nearest_user(user_id, others_users, pca_data, users_list):
     nearest_user = others_users[min_index_value]
 
     return nearest_user, min_index_value
+
+
+
+#############################################################################
+# EXAMPLE
+#############################################################################
+#user_ID = 'A141HP4LYPWMSR'
+#recommender_film(user_id=user_ID, option=3, clustering_option='hierarchical')
 

@@ -1,7 +1,7 @@
 import Tkinter as tk     # python 2
 import tkFont as tkfont  # python 2
 from open_data import *
-from sent_analysis_final import final_review
+from sent_analysis import final_review
 import tkMessageBox
 
 class SampleApp(tk.Tk):

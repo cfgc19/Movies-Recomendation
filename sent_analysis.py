@@ -253,10 +253,7 @@ def save_file():
     scores_5 = []
     scores_6 = []
     scores_7 = []
-    i = 0
     for review in reviews:
-        i+=1
-        print(i)
         words = nltk.word_tokenize(review)
         tokens = nltk.pos_tag(words)
 
@@ -298,4 +295,3 @@ def save_file():
 
 
 
-save_file()

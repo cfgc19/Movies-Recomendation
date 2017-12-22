@@ -11,12 +11,8 @@ with open('Sentiment_Analysis.txt', 'r') as data:
 data_new  = open('Sentiment_Analysis_new.txt', 'w')
 
 
-#header_new = 'productID,user' + data_new[0]
-#data_new1.write(header_new)
-
 data_scores = open('Sentiment_analysis_4scores.txt')
 data_scores_m = data_scores.readlines()
-#new_data_scores = open('Sentiment_analysis_4scores_new.txt', 'w')
 
 def occurrences(list_scores):
     unq_scores = np.unique(list_scores)
