@@ -108,7 +108,7 @@ class PageOne(tk.Frame):
         self.om1.pack(side="top", padx = 10 , pady = 10)
 
         self.S = tk.Scrollbar(self)
-        self.review_text = tk.Text(self, height=30, width=50)
+        self.review_text = tk.Text(self, height=20, width=50)
         self.btn_sentiment = tk.Button(text = "Sentiment", command = self.get_sentiment)
 
 class PageTwo(tk.Frame):
