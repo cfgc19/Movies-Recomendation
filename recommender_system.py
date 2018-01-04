@@ -321,7 +321,7 @@ def recommender_film(user_id, option, clustering_option):
 
     users_of_same_cluster = movies_liked[indexes_of_users_of_same_cluster, :]
     users_of_same_cluster_with_positive_reviews = users_of_same_cluster[np.where(users_of_same_cluster[:, 1] != '[]')[0]]
-    choosed_film_list = set()
+    choosed_film_list  = []
     film_list_first_user = []
     films_saw_by_user = get_movies_of_a_user(user_id)  # filmes que o primeiro user deu review (viu)
 
@@ -375,17 +375,20 @@ def recommender_film(user_id, option, clustering_option):
                 films_positives_by_nearest_user = eval(users_of_same_cluster_with_positive_reviews[
                     index_user, 1])  # filmes que o segundo user viu e GOSTOU
                 best_movies_of_nearest_user = list(set(films_positives_by_nearest_user) - set(films_saw_by_user))  # filmes que o user_2 viu mas o user_1 nao
+
             users_of_same_cluster_with_positive_reviews = np.delete(users_of_same_cluster_with_positive_reviews,
                                                                     index_user, 0)
+
             choosed_film = random.choice(best_movies_of_nearest_user)
 
             list_of_movies_liked = film_list[np.where(film_list[:, 0] == choosed_film)[0], 1]
             choosed_film_name = list_of_movies_liked[0]
-            choosed_film_list.add(choosed_film_name)
+
+            if choosed_film_name not in choosed_film_list:
+                choosed_film_list.insert(len(choosed_film_list),str(choosed_film_name))
             similar_users.append(nearest_user)
 
         if(len(choosed_film_list) == 3):
-            choosed_film_list = list(choosed_film_list)
             break
     return choosed_film_list, film_list_first_user, similar_users
 
