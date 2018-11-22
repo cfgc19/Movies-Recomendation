@@ -1,5 +1,6 @@
 # Movies-Recomendation
 
+We propose a recommender system that integrates both sentiment analysis and collaborative filtering. On our system, a rating inference approach is used to incorporate textual user reviews into collaborative filtering algorithms.
 
 # Interfaces gráficas
 GUI_sent_analysis.py
